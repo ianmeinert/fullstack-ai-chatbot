@@ -1,10 +1,11 @@
-import os
-from dotenv import load_dotenv
-import requests
 import json
-from ..redis.config import Redis
-from ..schema.chat import Message
+import os
+import requests
 
+from dotenv import load_dotenv
+
+from ..redis.config import Redis
+from ..redis.producer import Producer
 
 load_dotenv()
 redis = Redis()
@@ -28,8 +29,8 @@ class GPT:
         redis_client = redis.create_connection()
         self.producer = Producer(redis_client)
 
-    def query(self, input: str) -> list:
-        self.payload["inputs"] = f"{input} Bot:"
+    def query(self, msg_input: str) -> str:
+        self.payload["inputs"] = f"{msg_input} Bot:"
         data = json.dumps(self.payload)
         response = requests.request(
             "POST", self.url, headers=self.headers, data=data)

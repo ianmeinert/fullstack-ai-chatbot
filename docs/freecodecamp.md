@@ -325,17 +325,18 @@ from ..socket.connection import ConnectionManager
 
 manager = ConnectionManager()
 
+
 @chat.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print(data)
-            await manager.send_personal_message(f"Response: Simulating response from the GPT service", websocket)
+  await manager.connect(websocket)
+  try:
+    while True:
+      data = await websocket.receive_text()
+      print(data)
+      await send_personal_message(f"Response: Simulating response from the GPT service", websocket)
 
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+  except WebSocketDisconnect:
+    manager.disconnect(websocket)
 
 ```
 
@@ -408,10 +409,10 @@ import uuid
 from ..socket.connection import ConnectionManager
 from ..socket.utils import get_token
 
-
 chat = APIRouter()
 
 manager = ConnectionManager()
+
 
 # @route   POST /token
 # @desc    Route to generate chat token
@@ -420,15 +421,15 @@ manager = ConnectionManager()
 
 @chat.post("/token")
 async def token_generator(name: str, request: Request):
-    token = str(uuid.uuid4())
+  token = str(uuid.uuid4())
 
-    if name == "":
-        raise HTTPException(status_code=400, detail={
-            "loc": "name",  "msg": "Enter a valid name"})
+  if name == "":
+    raise HTTPException(status_code=400, detail={
+      "loc": "name", "msg": "Enter a valid name"})
 
-    data = {"name": name, "token": token}
+  data = {"name": name, "token": token}
 
-    return data
+  return data
 
 
 # @route   POST /refresh_token
@@ -438,7 +439,7 @@ async def token_generator(name: str, request: Request):
 
 @chat.post("/refresh_token")
 async def refresh_token(request: Request):
-    return None
+  return None
 
 
 # @route   Websocket /chat
@@ -447,15 +448,15 @@ async def refresh_token(request: Request):
 
 @chat.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print(data)
-            await manager.send_personal_message(f"Response: Simulating response from the GPT service", websocket)
+  await manager.connect(websocket)
+  try:
+    while True:
+      data = await websocket.receive_text()
+      print(data)
+      await send_personal_message(f"Response: Simulating response from the GPT service", websocket)
 
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+  except WebSocketDisconnect:
+    manager.disconnect(websocket)
 ```
 
 In the next part of this tutorial, we will focus on handling the state of our application and passing data between client and server.
@@ -652,21 +653,21 @@ redis = Redis()
 
 @chat.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
-    await manager.connect(websocket)
-    redis_client = await redis.create_connection()
-    producer = Producer(redis_client)
+  await manager.connect(websocket)
+  redis_client = await redis.create_connection()
+  producer = Producer(redis_client)
 
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print(data)
-            stream_data = {}
-            stream_data[token] = data
-            await producer.add_to_stream(stream_data, "message_channel")
-            await manager.send_personal_message(f"Response: Simulating response from the GPT service", websocket)
+  try:
+    while True:
+      data = await websocket.receive_text()
+      print(data)
+      stream_data = {}
+      stream_data[token] = data
+      await producer.add_to_stream(stream_data, "message_channel")
+      await send_personal_message(f"Response: Simulating response from the GPT service", websocket)
 
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+  except WebSocketDisconnect:
+    manager.disconnect(websocket)
 ```
 
 Next, in Postman, create a connection and send any number of messages that say `Hello`. You should have the stream messages printed to the terminal like below:
@@ -846,30 +847,30 @@ redis = Redis()
 
 @chat.post("/token")
 async def token_generator(name: str, request: Request):
-    token = str(uuid.uuid4())
+  token = str(uuid.uuid4())
 
-    if name == "":
-        raise HTTPException(status_code=400, detail={
-            "loc": "name",  "msg": "Enter a valid name"})
+  if name == "":
+    raise HTTPException(status_code=400, detail={
+      "loc": "name", "msg": "Enter a valid name"})
 
-    # Create nee chat session
-    json_client = redis.create_rejson_connection()
-    chat_session = Chat(
-        token=token,
-        messages=[],
-        name=name
-    )
+  # Create nee chat session
+  json_client = redis.create_rejson_connection()
+  chat_session = Chat(
+    token=token,
+    messages=[],
+    name=name
+  )
 
-    print(chat_session.dict())
+  print(chat_session.dict())
 
-    # Store chat session in redis JSON with the token as key
-    json_client.jsonset(str(token), Path.rootPath(), chat_session.dict())
+  # Store chat session in redis JSON with the token as key
+  json_client.jsonset(str(token), Path.rootPath(), chat_session.dict())
 
-    # Set a timeout for redis data
-    redis_client = await redis.create_connection()
-    await redis_client.expire(str(token), 3600)
+  # Set a timeout for redis data
+  redis_client = await redis.create_connection()
+  await redis_client.expire(str(token), 3600)
 
-    return chat_session.dict()
+  return chat_session.dict()
 
 
 # @route   POST /refresh_token
@@ -879,7 +880,7 @@ async def token_generator(name: str, request: Request):
 
 @chat.post("/refresh_token")
 async def refresh_token(request: Request):
-    return None
+  return None
 
 
 # @route   Websocket /chat
@@ -888,21 +889,21 @@ async def refresh_token(request: Request):
 
 @chat.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
-    await manager.connect(websocket)
-    redis_client = await redis.create_connection()
-    producer = Producer(redis_client)
-    json_client = redis.create_rejson_connection()
+  await manager.connect(websocket)
+  redis_client = await redis.create_connection()
+  producer = Producer(redis_client)
+  json_client = redis.create_rejson_connection()
 
-    try:
-        while True:
-            data = await websocket.receive_text()
-            stream_data = {}
-            stream_data[token] = data
-            await producer.add_to_stream(stream_data, "message_channel")
-            await manager.send_personal_message(f"Response: Simulating response from the GPT service", websocket)
+  try:
+    while True:
+      data = await websocket.receive_text()
+      stream_data = {}
+      stream_data[token] = data
+      await producer.add_to_stream(stream_data, "message_channel")
+      await send_personal_message(f"Response: Simulating response from the GPT service", websocket)
 
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+  except WebSocketDisconnect:
+    manager.disconnect(websocket)
 
 
 ```

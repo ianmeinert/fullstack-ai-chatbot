@@ -1,7 +1,8 @@
+import uuid
+
 from datetime import datetime
 from pydantic import BaseModel
-from typing import List, Optional
-import uuid
+from typing import List
 
 
 class Message(BaseModel):

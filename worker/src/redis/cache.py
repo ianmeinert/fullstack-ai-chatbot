@@ -1,3 +1,5 @@
+import json
+
 from rejson import Path
 
 
@@ -11,11 +13,17 @@ class Cache:
 
         return data
 
-    async def add_message_to_cache(self, token: str, source: str, message_data: dict):
+    async def add_message_to_cache(self,
+                                   token: str,
+                                   source: str,
+                                   message_data: dict):
         if source == "human":
             message_data['msg'] = "Human: " + (message_data['msg'])
         elif source == "bot":
             message_data['msg'] = "Bot: " + (message_data['msg'])
+
+        print("cached token: " + str(token))
+        print("message_data: " + json.dumps(message_data))
 
         self.json_client.jsonarrappend(
             str(token), Path('.messages'), message_data)
